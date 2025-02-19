@@ -1,0 +1,139 @@
+// Motor Driver Pin Definitions
+#define M1INA 22  // Left motors direction A
+#define M1INB 24  // Left motors direction B
+#define M1EN 26   // Left motors enable pin
+#define M1PWM 4   // Left motors PWM speed control
+
+#define M2INA 28  // Right motors direction A
+#define M2INB 30  // Right motors direction B
+#define M2EN 32   // Right motors enable pin
+#define M2PWM 5   // Right motors PWM speed control
+
+// Ultrasonic Sensor Pin Definitions
+#define M2 39 // Sensor 1 (Front Right - Interrupt) 
+#define M5 41 // Sensor 2 (Front Left - Interrupt) 
+#define M3 45 // Sensor 3 (Back Left) 
+#define M1 43 // Sensor 4 (Back Right) 
+
+const int motorSpeed = 50;  // Adjust this value to control motor speed
+const float obstacleThreshold = 7.0; // Stop if object is closer than 7 inches
+
+void setup() { 
+    Serial.begin(115200); 
+    
+    pinMode(M1INA, OUTPUT);
+    pinMode(M1INB, OUTPUT);
+    pinMode(M1EN, OUTPUT);
+    pinMode(M1PWM, OUTPUT);
+
+    pinMode(M2INA, OUTPUT);
+    pinMode(M2INB, OUTPUT);
+    pinMode(M2EN, OUTPUT);
+    pinMode(M2PWM, OUTPUT);
+
+    pinMode(M2, INPUT); 
+    pinMode(M5, INPUT); 
+    pinMode(M3, INPUT); 
+    pinMode(M1, INPUT); 
+    
+    stopMotors();
+}
+
+void loop() {
+    float distanceFrontRight = readMB1010_PWM(M2);
+    float distanceFrontLeft = readMB1010_PWM(M5);
+    float distanceBackLeft = readMB1010_PWM(M3);
+    float distanceBackRight = readMB1010_PWM(M1);
+
+    Serial.print("Front Right: "); Serial.print(distanceFrontRight); Serial.print(" in | ");
+    Serial.print("Front Left: "); Serial.print(distanceFrontLeft); Serial.print(" in | ");
+    Serial.print("Back Left: "); Serial.print(distanceBackLeft); Serial.print(" in | ");
+    Serial.print("Back Right: "); Serial.print(distanceBackRight); Serial.println(" in");
+
+    if (distanceFrontRight < obstacleThreshold && distanceFrontLeft < obstacleThreshold) {
+        stopMotors();
+        delay(500);
+        moveBackward();
+        delay(1000);
+        turnRight();
+        delay(800);
+    } else if (distanceFrontRight < obstacleThreshold) {
+        stopMotors();
+        delay(500);
+        turnLeft();
+        delay(800);
+    } else if (distanceFrontLeft < obstacleThreshold) {
+        stopMotors();
+        delay(500);
+        turnRight();
+        delay(800);
+    } else {
+        moveForward();
+    }
+
+    delay(100); // Small delay before next loop
+}
+
+// Function to move forward
+void moveForward() {
+    digitalWrite(M1EN, HIGH);
+    digitalWrite(M2EN, HIGH);
+    digitalWrite(M1INA, LOW);
+    digitalWrite(M1INB, HIGH);
+    analogWrite(M1PWM, motorSpeed);
+    digitalWrite(M2INA, LOW);
+    digitalWrite(M2INB, HIGH);
+    analogWrite(M2PWM, motorSpeed);
+}
+
+// Function to move backward
+void moveBackward() {
+    digitalWrite(M1EN, HIGH);
+    digitalWrite(M2EN, HIGH);
+    digitalWrite(M1INA, HIGH);
+    digitalWrite(M1INB, LOW);
+    analogWrite(M1PWM, motorSpeed);
+    digitalWrite(M2INA, HIGH);
+    digitalWrite(M2INB, LOW);
+    analogWrite(M2PWM, motorSpeed);
+}
+
+// Function to turn left
+void turnLeft() {
+    digitalWrite(M1EN, HIGH);
+    digitalWrite(M2EN, HIGH);
+    digitalWrite(M1INA, HIGH);
+    digitalWrite(M1INB, LOW);
+    analogWrite(M1PWM, motorSpeed);
+    digitalWrite(M2INA, LOW);
+    digitalWrite(M2INB, HIGH);
+    analogWrite(M2PWM, motorSpeed);
+}
+
+// Function to turn right
+void turnRight() {
+    digitalWrite(M1EN, HIGH);
+    digitalWrite(M2EN, HIGH);
+    digitalWrite(M1INA, LOW);
+    digitalWrite(M1INB, HIGH);
+    analogWrite(M1PWM, motorSpeed);
+    digitalWrite(M2INA, HIGH);
+    digitalWrite(M2INB, LOW);
+    analogWrite(M2PWM, motorSpeed);
+}
+
+// Function to stop both motors
+void stopMotors() {
+    digitalWrite(M1EN, LOW);
+    digitalWrite(M2EN, LOW);
+    analogWrite(M1PWM, 0);
+    analogWrite(M2PWM, 0);
+}
+
+// Function to read distance from MB1010 ultrasonic sensor
+float readMB1010_PWM(int sensorPin) {
+    unsigned long pulseWidth = pulseIn(sensorPin, HIGH); // Read PWM pulse width
+    float distance_cm = pulseWidth / 58.0; // Convert to cm
+    float distance_in = distance_cm * 0.3937; // Convert cm to inches
+    return distance_in;
+}
