@@ -15,7 +15,7 @@
 #define M3 45 // Sensor 3 (Back Left) 
 #define M1 43 // Sensor 4 (Back Right) 
 
-const int motorSpeed = 50;  // Adjust this value to control motor speed
+const int motorSpeed = 25;  // Adjust this value to control motor speed
 const float obstacleThreshold = 7.0; // Stop if object is closer than 7 inches
 
 void setup() { 
@@ -104,10 +104,10 @@ void turnLeft() {
     digitalWrite(M2EN, HIGH);
     digitalWrite(M1INA, HIGH);
     digitalWrite(M1INB, LOW);
-    analogWrite(M1PWM, motorSpeed);
+    analogWrite(M1PWM, 50);
     digitalWrite(M2INA, LOW);
     digitalWrite(M2INB, HIGH);
-    analogWrite(M2PWM, motorSpeed);
+    analogWrite(M2PWM, 50);
 }
 
 // Function to turn right
@@ -116,10 +116,10 @@ void turnRight() {
     digitalWrite(M2EN, HIGH);
     digitalWrite(M1INA, LOW);
     digitalWrite(M1INB, HIGH);
-    analogWrite(M1PWM, motorSpeed);
+    analogWrite(M1PWM, 50);
     digitalWrite(M2INA, HIGH);
     digitalWrite(M2INB, LOW);
-    analogWrite(M2PWM, motorSpeed);
+    analogWrite(M2PWM, 50);
 }
 
 // Function to stop both motors
